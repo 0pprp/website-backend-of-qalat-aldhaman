@@ -1,0 +1,129 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using QalatAldhaman.Store.Api.Data;
+using QalatAldhaman.Store.Api.DTOs.Admin;
+using QalatAldhaman.Store.Api.Entities;
+using QalatAldhaman.Store.Api.Entities.Enums;
+
+namespace QalatAldhaman.Store.Api.Controllers.Admin;
+
+[ApiController]
+[Authorize]
+[Route("api/admin/orders")]
+public class AdminOrdersController : ControllerBase
+{
+    private readonly AppDbContext _context;
+
+    public AdminOrdersController(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<List<OrderListItemDto>>> GetAll(
+        [FromQuery] OrderStatus? status,
+        [FromQuery] int? categoryId,
+        [FromQuery] PurchaseMethod? purchaseMethod,
+        [FromQuery] int? governorateId)
+    {
+        var query = _context.Orders
+            .Include(o => o.Product)
+            .Include(o => o.Category)
+            .AsQueryable();
+
+        if (status.HasValue) query = query.Where(o => o.Status == status.Value);
+        if (categoryId.HasValue) query = query.Where(o => o.CategoryId == categoryId.Value);
+        if (purchaseMethod.HasValue) query = query.Where(o => o.PurchaseMethod == purchaseMethod.Value);
+        if (governorateId.HasValue) query = query.Where(o => o.GovernorateId == governorateId.Value);
+
+        var orders = await query
+            .OrderByDescending(o => o.CreatedAt)
+            .Select(o => new OrderListItemDto
+            {
+                Id = o.Id,
+                OrderNumber = o.OrderNumber,
+                CustomerName = o.CustomerName,
+                PhoneNumber = o.PhoneNumber,
+                ProductName = o.Product.Name,
+                CategoryName = o.Category.Name,
+                PurchaseMethod = o.PurchaseMethod,
+                Status = o.Status,
+                PriceSnapshot = o.PriceSnapshot,
+                CreatedAt = o.CreatedAt,
+            })
+            .ToListAsync();
+
+        return Ok(orders);
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<OrderDetailDto>> GetOne(int id)
+    {
+        var order = await _context.Orders
+            .Include(o => o.Product)
+            .Include(o => o.Category)
+            .Include(o => o.Governorate)
+            .FirstOrDefaultAsync(o => o.Id == id);
+
+        if (order is null)
+        {
+            return NotFound(new { message = "الطلب غير موجود" });
+        }
+
+        return Ok(ToDetailDto(order));
+    }
+
+    [HttpPut("{id:int}/status")]
+    public async Task<ActionResult<OrderDetailDto>> UpdateStatus(int id, UpdateOrderStatusRequestDto request)
+    {
+        var order = await _context.Orders
+            .Include(o => o.Product)
+            .Include(o => o.Category)
+            .Include(o => o.Governorate)
+            .FirstOrDefaultAsync(o => o.Id == id);
+
+        if (order is null)
+        {
+            return NotFound(new { message = "الطلب غير موجود" });
+        }
+
+        order.Status = request.Status;
+        if (request.Notes is not null)
+        {
+            order.Notes = request.Notes;
+        }
+
+        await _context.SaveChangesAsync();
+
+        return Ok(ToDetailDto(order));
+    }
+
+    private static OrderDetailDto ToDetailDto(Order o) => new()
+    {
+        Id = o.Id,
+        OrderNumber = o.OrderNumber,
+        ProductId = o.ProductId,
+        ProductName = o.Product.Name,
+        CategoryId = o.CategoryId,
+        CategoryName = o.Category.Name,
+        PurchaseMethod = o.PurchaseMethod,
+        CustomerName = o.CustomerName,
+        PhoneNumber = o.PhoneNumber,
+        GovernorateId = o.GovernorateId,
+        GovernorateName = o.Governorate.Name,
+        ShopName = o.ShopName,
+        ShopAddress = o.ShopAddress,
+        HomeAddress = o.HomeAddress,
+        NearestLandmark = o.NearestLandmark,
+        MediaUrl = o.MediaUrl,
+        MediaType = o.MediaType,
+        GpsLat = o.GpsLat,
+        GpsLng = o.GpsLng,
+        CustomProductDescription = o.CustomProductDescription,
+        PriceSnapshot = o.PriceSnapshot,
+        Status = o.Status,
+        Notes = o.Notes,
+        CreatedAt = o.CreatedAt,
+    };
+}
