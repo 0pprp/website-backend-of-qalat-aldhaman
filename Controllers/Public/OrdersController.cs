@@ -24,6 +24,38 @@ public class OrdersController : ControllerBase
         _orderNumberGenerator = orderNumberGenerator;
     }
 
+    [HttpGet("lookup")]
+    public async Task<ActionResult<List<OrderLookupResultDto>>> Lookup([FromQuery] string phone)
+    {
+        if (string.IsNullOrWhiteSpace(phone) || !IraqiPhoneRegex.IsMatch(phone))
+        {
+            return BadRequest(new { message = "رقم الهاتف غير صحيح، يجب أن يكون بصيغة 07XXXXXXXXX" });
+        }
+
+        var orders = await _context.Orders
+            .Where(o => o.PhoneNumber == phone)
+            .OrderByDescending(o => o.CreatedAt)
+            .Include(o => o.Product)
+            .ToListAsync();
+
+        var contractUrlsByMethod = await _context.PurchaseMethodContracts
+            .ToDictionaryAsync(c => c.PurchaseMethod, c => c.ContractPdfUrl);
+
+        var result = orders.Select(o => new OrderLookupResultDto
+        {
+            OrderNumber = o.OrderNumber,
+            ProductName = o.Product.Name,
+            PurchaseMethod = o.PurchaseMethod,
+            TotalPriceSnapshot = o.TotalPriceSnapshot,
+            InstallmentPaymentAmountSnapshot = o.InstallmentPaymentAmountSnapshot,
+            Status = o.Status,
+            CreatedAt = o.CreatedAt,
+            ContractPdfUrl = contractUrlsByMethod.GetValueOrDefault(o.PurchaseMethod),
+        }).ToList();
+
+        return Ok(result);
+    }
+
     [HttpPost]
     public async Task<ActionResult<CreateOrderResponseDto>> Create(CreateOrderRequestDto request)
     {
