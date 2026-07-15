@@ -10,7 +10,7 @@ public class DashboardStatsDto
     public Dictionary<string, int> OrdersByPurchaseMethod { get; set; } = new();
 
     /// <summary>
-    /// تقديري فقط (مجموع PriceSnapshot لطلبات Confirmed/Completed) — ليس مبلغاً محصّلاً فعلياً،
+    /// تقديري فقط (مجموع TotalPriceSnapshot لطلبات Confirmed/Completed) — ليس مبلغاً محصّلاً فعلياً،
     /// خصوصاً بطرق الأقساط حيث يُدفع على دفعات لاحقة وليس دفعة واحدة عند التأكيد.
     /// </summary>
     public decimal EstimatedConfirmedRevenue { get; set; }

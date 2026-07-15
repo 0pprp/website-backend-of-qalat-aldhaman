@@ -67,7 +67,7 @@ public class AdminDashboardController : ControllerBase
         // 5. Estimated confirmed revenue (Confirmed + Completed only).
         var estimatedConfirmedRevenue = await _context.Orders
             .Where(o => o.Status == OrderStatus.Confirmed || o.Status == OrderStatus.Completed)
-            .SumAsync(o => o.PriceSnapshot);
+            .SumAsync(o => o.TotalPriceSnapshot);
 
         // 6. Last 10 orders.
         var recentOrders = await _context.Orders
@@ -75,6 +75,7 @@ public class AdminDashboardController : ControllerBase
             .Take(10)
             .Select(o => new RecentOrderDto
             {
+                Id = o.Id,
                 OrderNumber = o.OrderNumber,
                 CustomerName = o.CustomerName,
                 ProductName = o.Product.Name,

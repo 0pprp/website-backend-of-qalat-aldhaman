@@ -72,26 +72,43 @@ public class OrdersController : ControllerBase
             return BadRequest(new { message = "الرجاء وصف المنتج المطلوب (CustomProductDescription)" });
         }
 
-        // 6. استخراج السعر حسب طريقة الدفع
-        decimal? price = request.PurchaseMethod switch
-        {
-            PurchaseMethod.Cash => product.CashPrice,
-            PurchaseMethod.MonthlyInstallment or PurchaseMethod.MonthlyRafidain => product.MonthlyInstallmentPrice,
-            PurchaseMethod.DailyInstallment => product.DailyInstallmentPrice,
-            _ => null,
-        };
+        // 6. استخراج السعر حسب طريقة الدفع — للقسط: المبلغ الكلي + الدفعة الدورية (يجب أن يكونا معبّيين معاً،
+        // وإلا تُعامل الطريقة كغير متوفرة أصلاً، بنفس منطق IsMonthlyInstallmentAvailable/IsDailyInstallmentAvailable).
+        decimal? totalPrice;
+        decimal? paymentAmount;
 
-        if (price is null)
+        switch (request.PurchaseMethod)
+        {
+            case PurchaseMethod.Cash:
+                totalPrice = product.CashPrice;
+                paymentAmount = null;
+                break;
+            case PurchaseMethod.MonthlyInstallment:
+            case PurchaseMethod.MonthlyRafidain:
+                totalPrice = product.IsMonthlyInstallmentAvailable ? product.MonthlyTotalPrice : null;
+                paymentAmount = product.IsMonthlyInstallmentAvailable ? product.MonthlyPaymentAmount : null;
+                break;
+            case PurchaseMethod.DailyInstallment:
+                totalPrice = product.IsDailyInstallmentAvailable ? product.DailyTotalPrice : null;
+                paymentAmount = product.IsDailyInstallmentAvailable ? product.DailyPaymentAmount : null;
+                break;
+            default:
+                totalPrice = null;
+                paymentAmount = null;
+                break;
+        }
+
+        if (totalPrice is null)
         {
             return BadRequest(new { message = "هذا المنتج لا يتوفر بهذه الطريقة حالياً" });
         }
 
-        // 7. الحد الأدنى للفاتورة
+        // 7. الحد الأدنى للفاتورة (مقارنة بالمبلغ الكلي، وليس الدفعة الدورية)
         var minRequired = request.PurchaseMethod == PurchaseMethod.Cash
             ? category.MinInvoiceCash
             : category.MinInvoiceInstallment;
 
-        if (minRequired.HasValue && price.Value < minRequired.Value)
+        if (minRequired.HasValue && totalPrice.Value < minRequired.Value)
         {
             return BadRequest(new
             {
@@ -133,7 +150,8 @@ public class OrdersController : ControllerBase
             GpsLat = request.GpsLat,
             GpsLng = request.GpsLng,
             CustomProductDescription = request.CustomProductDescription,
-            PriceSnapshot = price.Value,
+            TotalPriceSnapshot = totalPrice.Value,
+            InstallmentPaymentAmountSnapshot = paymentAmount,
             Status = OrderStatus.Pending,
             CreatedAt = DateTime.UtcNow,
         };
@@ -141,11 +159,16 @@ public class OrdersController : ControllerBase
         _context.Orders.Add(order);
         await _context.SaveChangesAsync();
 
+        var contractUrl = await _context.PurchaseMethodContracts
+            .Where(c => c.PurchaseMethod == order.PurchaseMethod)
+            .Select(c => c.ContractPdfUrl)
+            .FirstOrDefaultAsync();
+
         return Ok(new CreateOrderResponseDto
         {
             OrderNumber = order.OrderNumber,
             Status = order.Status,
-            ContractPdfUrl = product.ContractPdfUrl,
+            ContractPdfUrl = contractUrl,
         });
     }
 

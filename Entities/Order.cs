@@ -32,7 +32,13 @@ public class Order
     public decimal? GpsLat { get; set; }
     public decimal? GpsLng { get; set; }
     public string? CustomProductDescription { get; set; }
-    public decimal PriceSnapshot { get; set; }
+
+    /// <summary>المبلغ الكلي وقت الطلب — يطابق CashPrice أو MonthlyTotalPrice أو DailyTotalPrice حسب طريقة الدفع.</summary>
+    public decimal TotalPriceSnapshot { get; set; }
+
+    /// <summary>الدفعة الدورية وقت الطلب (شهرية/يومية) — فارغة لطلبات النقد.</summary>
+    public decimal? InstallmentPaymentAmountSnapshot { get; set; }
+
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; }

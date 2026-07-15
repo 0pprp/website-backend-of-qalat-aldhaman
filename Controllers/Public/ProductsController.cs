@@ -35,9 +35,10 @@ public class ProductsController : ControllerBase
             Name = product.Name,
             Description = product.Description,
             CashPrice = product.CashPrice,
-            MonthlyInstallmentPrice = product.MonthlyInstallmentPrice,
-            DailyInstallmentPrice = product.DailyInstallmentPrice,
-            ContractPdfUrl = product.ContractPdfUrl,
+            MonthlyTotalPrice = product.IsMonthlyInstallmentAvailable ? product.MonthlyTotalPrice : null,
+            MonthlyPaymentAmount = product.IsMonthlyInstallmentAvailable ? product.MonthlyPaymentAmount : null,
+            DailyTotalPrice = product.IsDailyInstallmentAvailable ? product.DailyTotalPrice : null,
+            DailyPaymentAmount = product.IsDailyInstallmentAvailable ? product.DailyPaymentAmount : null,
             Images = product.Images
                 .OrderBy(i => i.DisplayOrder)
                 .Select(i => new ProductImagePublicDto { Id = i.Id, ImageUrl = i.ImageUrl, DisplayOrder = i.DisplayOrder })

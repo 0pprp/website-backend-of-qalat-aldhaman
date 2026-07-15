@@ -76,8 +76,10 @@ public class AdminProductsController : ControllerBase
             Name = request.Name,
             Description = request.Description,
             CashPrice = request.CashPrice,
-            MonthlyInstallmentPrice = request.MonthlyInstallmentPrice,
-            DailyInstallmentPrice = request.DailyInstallmentPrice,
+            MonthlyTotalPrice = request.MonthlyTotalPrice,
+            MonthlyPaymentAmount = request.MonthlyPaymentAmount,
+            DailyTotalPrice = request.DailyTotalPrice,
+            DailyPaymentAmount = request.DailyPaymentAmount,
             SKU = request.SKU,
             IsActive = request.IsActive,
             CreatedAt = now,
@@ -121,8 +123,10 @@ public class AdminProductsController : ControllerBase
         product.Name = request.Name;
         product.Description = request.Description;
         product.CashPrice = request.CashPrice;
-        product.MonthlyInstallmentPrice = request.MonthlyInstallmentPrice;
-        product.DailyInstallmentPrice = request.DailyInstallmentPrice;
+        product.MonthlyTotalPrice = request.MonthlyTotalPrice;
+        product.MonthlyPaymentAmount = request.MonthlyPaymentAmount;
+        product.DailyTotalPrice = request.DailyTotalPrice;
+        product.DailyPaymentAmount = request.DailyPaymentAmount;
         product.SKU = request.SKU;
         product.IsActive = request.IsActive;
         product.UpdatedAt = DateTime.UtcNow;
@@ -201,31 +205,6 @@ public class AdminProductsController : ControllerBase
         return NoContent();
     }
 
-    [HttpPut("{id:int}/contract")]
-    public async Task<ActionResult<ProductDto>> UpdateContract(int id, UpdateProductContractRequestDto request)
-    {
-        var product = await _context.Products
-            .Include(p => p.Images)
-            .Include(p => p.Category)
-            .FirstOrDefaultAsync(p => p.Id == id);
-
-        if (product is null)
-        {
-            return NotFound(new { message = "المنتج غير موجود" });
-        }
-
-        if (string.IsNullOrWhiteSpace(request.ContractPdfUrl))
-        {
-            return BadRequest(new { message = "ContractPdfUrl مطلوب" });
-        }
-
-        product.ContractPdfUrl = request.ContractPdfUrl;
-        product.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
-
-        return Ok(ToDto(product));
-    }
-
     private static string? ValidatePricesAgainstCategory(ProductUpsertDto request, Category category)
     {
         if (request.CashPrice.HasValue && !category.AllowsCash)
@@ -233,14 +212,28 @@ public class AdminProductsController : ControllerBase
             return "لا يمكن تحديد سعر نقدي (CashPrice) لأن هذه الفئة لا تسمح بالدفع النقدي";
         }
 
-        if (request.MonthlyInstallmentPrice.HasValue && !category.AllowsMonthlyInstallment)
+        var hasMonthlyTotal = request.MonthlyTotalPrice.HasValue;
+        var hasMonthlyPayment = request.MonthlyPaymentAmount.HasValue;
+        if ((hasMonthlyTotal || hasMonthlyPayment) && !category.AllowsMonthlyInstallment)
         {
             return "لا يمكن تحديد سعر التقسيط الشهري لأن هذه الفئة لا تسمح بالتقسيط الشهري";
         }
 
-        if (request.DailyInstallmentPrice.HasValue && !category.AllowsDailyInstallment)
+        if (hasMonthlyTotal != hasMonthlyPayment)
+        {
+            return "يجب تحديد المبلغ الكلي والدفعة الشهرية معاً بالقسط الشهري (أو تركهما فارغين معاً)";
+        }
+
+        var hasDailyTotal = request.DailyTotalPrice.HasValue;
+        var hasDailyPayment = request.DailyPaymentAmount.HasValue;
+        if ((hasDailyTotal || hasDailyPayment) && !category.AllowsDailyInstallment)
         {
             return "لا يمكن تحديد سعر التقسيط اليومي لأن هذه الفئة لا تسمح بالتقسيط اليومي";
+        }
+
+        if (hasDailyTotal != hasDailyPayment)
+        {
+            return "يجب تحديد المبلغ الكلي والدفعة اليومية معاً بالقسط اليومي (أو تركهما فارغين معاً)";
         }
 
         return null;
@@ -254,9 +247,10 @@ public class AdminProductsController : ControllerBase
         Name = p.Name,
         Description = p.Description,
         CashPrice = p.CashPrice,
-        MonthlyInstallmentPrice = p.MonthlyInstallmentPrice,
-        DailyInstallmentPrice = p.DailyInstallmentPrice,
-        ContractPdfUrl = p.ContractPdfUrl,
+        MonthlyTotalPrice = p.MonthlyTotalPrice,
+        MonthlyPaymentAmount = p.MonthlyPaymentAmount,
+        DailyTotalPrice = p.DailyTotalPrice,
+        DailyPaymentAmount = p.DailyPaymentAmount,
         SKU = p.SKU,
         IsActive = p.IsActive,
         CreatedAt = p.CreatedAt,

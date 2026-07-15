@@ -49,7 +49,8 @@ public class AdminOrdersController : ControllerBase
                 CategoryName = o.Category.Name,
                 PurchaseMethod = o.PurchaseMethod,
                 Status = o.Status,
-                PriceSnapshot = o.PriceSnapshot,
+                TotalPriceSnapshot = o.TotalPriceSnapshot,
+                InstallmentPaymentAmountSnapshot = o.InstallmentPaymentAmountSnapshot,
                 CreatedAt = o.CreatedAt,
             })
             .ToListAsync();
@@ -71,7 +72,7 @@ public class AdminOrdersController : ControllerBase
             return NotFound(new { message = "الطلب غير موجود" });
         }
 
-        return Ok(ToDetailDto(order));
+        return Ok(await ToDetailDtoAsync(order));
     }
 
     [HttpPut("{id:int}/status")]
@@ -96,34 +97,44 @@ public class AdminOrdersController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        return Ok(ToDetailDto(order));
+        return Ok(await ToDetailDtoAsync(order));
     }
 
-    private static OrderDetailDto ToDetailDto(Order o) => new()
+    private async Task<OrderDetailDto> ToDetailDtoAsync(Order o)
     {
-        Id = o.Id,
-        OrderNumber = o.OrderNumber,
-        ProductId = o.ProductId,
-        ProductName = o.Product.Name,
-        CategoryId = o.CategoryId,
-        CategoryName = o.Category.Name,
-        PurchaseMethod = o.PurchaseMethod,
-        CustomerName = o.CustomerName,
-        PhoneNumber = o.PhoneNumber,
-        GovernorateId = o.GovernorateId,
-        GovernorateName = o.Governorate.Name,
-        ShopName = o.ShopName,
-        ShopAddress = o.ShopAddress,
-        HomeAddress = o.HomeAddress,
-        NearestLandmark = o.NearestLandmark,
-        MediaUrl = o.MediaUrl,
-        MediaType = o.MediaType,
-        GpsLat = o.GpsLat,
-        GpsLng = o.GpsLng,
-        CustomProductDescription = o.CustomProductDescription,
-        PriceSnapshot = o.PriceSnapshot,
-        Status = o.Status,
-        Notes = o.Notes,
-        CreatedAt = o.CreatedAt,
-    };
+        var contractUrl = await _context.PurchaseMethodContracts
+            .Where(c => c.PurchaseMethod == o.PurchaseMethod)
+            .Select(c => c.ContractPdfUrl)
+            .FirstOrDefaultAsync();
+
+        return new OrderDetailDto
+        {
+            Id = o.Id,
+            OrderNumber = o.OrderNumber,
+            ProductId = o.ProductId,
+            ProductName = o.Product.Name,
+            CategoryId = o.CategoryId,
+            CategoryName = o.Category.Name,
+            PurchaseMethod = o.PurchaseMethod,
+            CustomerName = o.CustomerName,
+            PhoneNumber = o.PhoneNumber,
+            GovernorateId = o.GovernorateId,
+            GovernorateName = o.Governorate.Name,
+            ShopName = o.ShopName,
+            ShopAddress = o.ShopAddress,
+            HomeAddress = o.HomeAddress,
+            NearestLandmark = o.NearestLandmark,
+            MediaUrl = o.MediaUrl,
+            MediaType = o.MediaType,
+            GpsLat = o.GpsLat,
+            GpsLng = o.GpsLng,
+            CustomProductDescription = o.CustomProductDescription,
+            TotalPriceSnapshot = o.TotalPriceSnapshot,
+            InstallmentPaymentAmountSnapshot = o.InstallmentPaymentAmountSnapshot,
+            Status = o.Status,
+            Notes = o.Notes,
+            CreatedAt = o.CreatedAt,
+            ContractPdfUrl = contractUrl,
+        };
+    }
 }

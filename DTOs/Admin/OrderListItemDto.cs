@@ -12,6 +12,7 @@ public class OrderListItemDto
     public string CategoryName { get; set; } = string.Empty;
     public PurchaseMethod PurchaseMethod { get; set; }
     public OrderStatus Status { get; set; }
-    public decimal PriceSnapshot { get; set; }
+    public decimal TotalPriceSnapshot { get; set; }
+    public decimal? InstallmentPaymentAmountSnapshot { get; set; }
     public DateTime CreatedAt { get; set; }
 }

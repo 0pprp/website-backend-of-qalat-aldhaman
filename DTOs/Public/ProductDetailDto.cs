@@ -6,9 +6,10 @@ public class ProductDetailDto
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public decimal? CashPrice { get; set; }
-    public decimal? MonthlyInstallmentPrice { get; set; }
-    public decimal? DailyInstallmentPrice { get; set; }
-    public string? ContractPdfUrl { get; set; }
+    public decimal? MonthlyTotalPrice { get; set; }
+    public decimal? MonthlyPaymentAmount { get; set; }
+    public decimal? DailyTotalPrice { get; set; }
+    public decimal? DailyPaymentAmount { get; set; }
     public List<ProductImagePublicDto> Images { get; set; } = [];
     public CategoryDetailDto Category { get; set; } = null!;
 }

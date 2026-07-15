@@ -17,6 +17,7 @@ public class AppDbContext : DbContext
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<Review> Reviews => Set<Review>();
     public DbSet<AdminUser> AdminUsers => Set<AdminUser>();
+    public DbSet<PurchaseMethodContract> PurchaseMethodContracts => Set<PurchaseMethodContract>();
 
     /// <summary>DB sequence backing OrderNumber generation (see Services/OrderNumberGenerator.cs).</summary>
     public const string OrderNumberSequenceName = "order_number_seq";
@@ -38,8 +39,10 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Product>(entity =>
         {
             entity.Property(p => p.CashPrice).HasColumnType("numeric(12,2)");
-            entity.Property(p => p.MonthlyInstallmentPrice).HasColumnType("numeric(12,2)");
-            entity.Property(p => p.DailyInstallmentPrice).HasColumnType("numeric(12,2)");
+            entity.Property(p => p.MonthlyTotalPrice).HasColumnType("numeric(12,2)");
+            entity.Property(p => p.MonthlyPaymentAmount).HasColumnType("numeric(12,2)");
+            entity.Property(p => p.DailyTotalPrice).HasColumnType("numeric(12,2)");
+            entity.Property(p => p.DailyPaymentAmount).HasColumnType("numeric(12,2)");
 
             entity.HasOne(p => p.Category)
                 .WithMany(c => c.Products)
@@ -72,7 +75,8 @@ public class AppDbContext : DbContext
         {
             entity.HasIndex(o => o.OrderNumber).IsUnique();
 
-            entity.Property(o => o.PriceSnapshot).HasColumnType("numeric(12,2)");
+            entity.Property(o => o.TotalPriceSnapshot).HasColumnType("numeric(12,2)");
+            entity.Property(o => o.InstallmentPaymentAmountSnapshot).HasColumnType("numeric(12,2)");
             entity.Property(o => o.GpsLat).HasColumnType("numeric(9,6)");
             entity.Property(o => o.GpsLng).HasColumnType("numeric(9,6)");
 
@@ -95,6 +99,20 @@ public class AppDbContext : DbContext
                 .HasForeignKey(o => o.GovernorateId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
+
+        modelBuilder.Entity<PurchaseMethodContract>(entity =>
+        {
+            entity.Property(pmc => pmc.PurchaseMethod).HasConversion<string>().HasMaxLength(30);
+            entity.HasIndex(pmc => pmc.PurchaseMethod).IsUnique();
+        });
+
+        // Seed: صف واحد لكل طريقة دفع، بدون رابط عقد مبدئياً (يُرفع لاحقاً عبر لوحة التحكم).
+        modelBuilder.Entity<PurchaseMethodContract>().HasData(
+            new PurchaseMethodContract { Id = 1, PurchaseMethod = PurchaseMethod.Cash, ContractPdfUrl = null, UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new PurchaseMethodContract { Id = 2, PurchaseMethod = PurchaseMethod.MonthlyInstallment, ContractPdfUrl = null, UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new PurchaseMethodContract { Id = 3, PurchaseMethod = PurchaseMethod.MonthlyRafidain, ContractPdfUrl = null, UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new PurchaseMethodContract { Id = 4, PurchaseMethod = PurchaseMethod.DailyInstallment, ContractPdfUrl = null, UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) }
+        );
 
         // Seed: the 12 governorates, in the exact required display order (Id doubles as DisplayOrder).
         modelBuilder.Entity<Governorate>().HasData(

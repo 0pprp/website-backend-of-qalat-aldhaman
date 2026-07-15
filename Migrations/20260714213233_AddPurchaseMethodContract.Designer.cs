@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using QalatAldhaman.Store.Api.Data;
@@ -11,9 +12,11 @@ using QalatAldhaman.Store.Api.Data;
 namespace QalatAldhaman.Store.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260714213233_AddPurchaseMethodContract")]
+    partial class AddPurchaseMethodContract
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -259,10 +262,6 @@ namespace QalatAldhaman.Store.Api.Migrations
                         .HasColumnType("text")
                         .HasColumnName("home_address");
 
-                    b.Property<decimal?>("InstallmentPaymentAmountSnapshot")
-                        .HasColumnType("numeric(12,2)")
-                        .HasColumnName("installment_payment_amount_snapshot");
-
                     b.Property<string>("MediaType")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
@@ -290,6 +289,10 @@ namespace QalatAldhaman.Store.Api.Migrations
                         .HasColumnType("text")
                         .HasColumnName("phone_number");
 
+                    b.Property<decimal>("PriceSnapshot")
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("price_snapshot");
+
                     b.Property<int>("ProductId")
                         .HasColumnType("integer")
                         .HasColumnName("product_id");
@@ -313,10 +316,6 @@ namespace QalatAldhaman.Store.Api.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("status");
-
-                    b.Property<decimal>("TotalPriceSnapshot")
-                        .HasColumnType("numeric(12,2)")
-                        .HasColumnName("total_price_snapshot");
 
                     b.HasKey("Id")
                         .HasName("pk_orders");
@@ -358,13 +357,9 @@ namespace QalatAldhaman.Store.Api.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.Property<decimal?>("DailyPaymentAmount")
+                    b.Property<decimal?>("DailyInstallmentPrice")
                         .HasColumnType("numeric(12,2)")
-                        .HasColumnName("daily_payment_amount");
-
-                    b.Property<decimal?>("DailyTotalPrice")
-                        .HasColumnType("numeric(12,2)")
-                        .HasColumnName("daily_total_price");
+                        .HasColumnName("daily_installment_price");
 
                     b.Property<string>("Description")
                         .HasColumnType("text")
@@ -374,13 +369,9 @@ namespace QalatAldhaman.Store.Api.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
 
-                    b.Property<decimal?>("MonthlyPaymentAmount")
+                    b.Property<decimal?>("MonthlyInstallmentPrice")
                         .HasColumnType("numeric(12,2)")
-                        .HasColumnName("monthly_payment_amount");
-
-                    b.Property<decimal?>("MonthlyTotalPrice")
-                        .HasColumnType("numeric(12,2)")
-                        .HasColumnName("monthly_total_price");
+                        .HasColumnName("monthly_installment_price");
 
                     b.Property<string>("Name")
                         .IsRequired()

@@ -24,8 +24,10 @@ public class OrderDetailDto
     public decimal? GpsLat { get; set; }
     public decimal? GpsLng { get; set; }
     public string? CustomProductDescription { get; set; }
-    public decimal PriceSnapshot { get; set; }
+    public decimal TotalPriceSnapshot { get; set; }
+    public decimal? InstallmentPaymentAmountSnapshot { get; set; }
     public OrderStatus Status { get; set; }
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; }
+    public string? ContractPdfUrl { get; set; }
 }
