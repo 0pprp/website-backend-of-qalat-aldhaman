@@ -30,6 +30,7 @@ public class AdminOrdersController : ControllerBase
         var query = _context.Orders
             .Include(o => o.Product)
             .Include(o => o.Category)
+            .Include(o => o.Governorate)
             .AsQueryable();
 
         if (status.HasValue) query = query.Where(o => o.Status == status.Value);
@@ -47,6 +48,8 @@ public class AdminOrdersController : ControllerBase
                 PhoneNumber = o.PhoneNumber,
                 ProductName = o.Product.Name,
                 CategoryName = o.Category.Name,
+                GovernorateId = o.GovernorateId,
+                GovernorateName = o.Governorate.Name,
                 PurchaseMethod = o.PurchaseMethod,
                 Status = o.Status,
                 TotalPriceSnapshot = o.TotalPriceSnapshot,
