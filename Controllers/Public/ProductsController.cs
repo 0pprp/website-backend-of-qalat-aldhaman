@@ -37,6 +37,10 @@ public class ProductsController : ControllerBase
             CashPrice = product.CashPrice,
             MonthlyTotalPrice = product.IsMonthlyInstallmentAvailable ? product.MonthlyTotalPrice : null,
             MonthlyPaymentAmount = product.IsMonthlyInstallmentAvailable ? product.MonthlyPaymentAmount : null,
+            MonthlyDownPayment = product.IsMonthlyInstallmentAvailable ? product.MonthlyDownPayment : null,
+            RafidainTotalPrice = product.IsRafidainInstallmentAvailable ? product.RafidainTotalPrice : null,
+            RafidainPaymentAmount = product.IsRafidainInstallmentAvailable ? product.RafidainPaymentAmount : null,
+            RafidainDownPayment = product.IsRafidainInstallmentAvailable ? product.RafidainDownPayment : null,
             DailyTotalPrice = product.IsDailyInstallmentAvailable ? product.DailyTotalPrice : null,
             DailyPaymentAmount = product.IsDailyInstallmentAvailable ? product.DailyPaymentAmount : null,
             Images = product.Images

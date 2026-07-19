@@ -103,6 +103,22 @@ public class AdminOrdersController : ControllerBase
         return Ok(await ToDetailDtoAsync(order));
     }
 
+    /// <summary>حذف طلب نهائي — لا شيء بقاعدة البيانات يرتبط بالطلب كأب (leaf entity)، فلا قيود Restrict تعترض هذا الحذف.</summary>
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var order = await _context.Orders.FindAsync(id);
+        if (order is null)
+        {
+            return NotFound(new { message = "الطلب غير موجود" });
+        }
+
+        _context.Orders.Remove(order);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
     private async Task<OrderDetailDto> ToDetailDtoAsync(Order o)
     {
         var contractUrl = await _context.PurchaseMethodContracts

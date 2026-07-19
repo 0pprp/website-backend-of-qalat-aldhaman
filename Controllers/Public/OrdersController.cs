@@ -116,9 +116,12 @@ public class OrdersController : ControllerBase
                 paymentAmount = null;
                 break;
             case PurchaseMethod.MonthlyInstallment:
-            case PurchaseMethod.MonthlyRafidain:
                 totalPrice = product.IsMonthlyInstallmentAvailable ? product.MonthlyTotalPrice : null;
                 paymentAmount = product.IsMonthlyInstallmentAvailable ? product.MonthlyPaymentAmount : null;
+                break;
+            case PurchaseMethod.MonthlyRafidain:
+                totalPrice = product.IsRafidainInstallmentAvailable ? product.RafidainTotalPrice : null;
+                paymentAmount = product.IsRafidainInstallmentAvailable ? product.RafidainPaymentAmount : null;
                 break;
             case PurchaseMethod.DailyInstallment:
                 totalPrice = product.IsDailyInstallmentAvailable ? product.DailyTotalPrice : null;

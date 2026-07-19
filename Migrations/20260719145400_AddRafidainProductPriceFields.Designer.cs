@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using QalatAldhaman.Store.Api.Data;
@@ -11,9 +12,11 @@ using QalatAldhaman.Store.Api.Data;
 namespace QalatAldhaman.Store.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260719145400_AddRafidainProductPriceFields")]
+    partial class AddRafidainProductPriceFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -374,10 +377,6 @@ namespace QalatAldhaman.Store.Api.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
 
-                    b.Property<decimal?>("MonthlyDownPayment")
-                        .HasColumnType("numeric(12,2)")
-                        .HasColumnName("monthly_down_payment");
-
                     b.Property<decimal?>("MonthlyPaymentAmount")
                         .HasColumnType("numeric(12,2)")
                         .HasColumnName("monthly_payment_amount");
@@ -390,10 +389,6 @@ namespace QalatAldhaman.Store.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("name");
-
-                    b.Property<decimal?>("RafidainDownPayment")
-                        .HasColumnType("numeric(12,2)")
-                        .HasColumnName("rafidain_down_payment");
 
                     b.Property<decimal?>("RafidainPaymentAmount")
                         .HasColumnType("numeric(12,2)")

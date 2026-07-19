@@ -19,6 +19,18 @@ public class Product
     /// <summary>الدفعة الشهرية</summary>
     public decimal? MonthlyPaymentAmount { get; set; }
 
+    /// <summary>المقدمة بالقسط الشهري (اختيارية — لا تخضع لقاعدة "الحقلين معاً")</summary>
+    public decimal? MonthlyDownPayment { get; set; }
+
+    /// <summary>المبلغ الكلي بقسط الرافدين الشهري (للموظفين) — سعر منفصل عن القسط الشهري العادي</summary>
+    public decimal? RafidainTotalPrice { get; set; }
+
+    /// <summary>الدفعة الشهرية بقسط الرافدين</summary>
+    public decimal? RafidainPaymentAmount { get; set; }
+
+    /// <summary>المقدمة بقسط الرافدين (اختيارية — لا تخضع لقاعدة "الحقلين معاً")</summary>
+    public decimal? RafidainDownPayment { get; set; }
+
     /// <summary>المبلغ الكلي بالقسط اليومي</summary>
     public decimal? DailyTotalPrice { get; set; }
 
@@ -39,6 +51,9 @@ public class Product
     /// </summary>
     [NotMapped]
     public bool IsMonthlyInstallmentAvailable => MonthlyTotalPrice.HasValue && MonthlyPaymentAmount.HasValue;
+
+    [NotMapped]
+    public bool IsRafidainInstallmentAvailable => RafidainTotalPrice.HasValue && RafidainPaymentAmount.HasValue;
 
     [NotMapped]
     public bool IsDailyInstallmentAvailable => DailyTotalPrice.HasValue && DailyPaymentAmount.HasValue;

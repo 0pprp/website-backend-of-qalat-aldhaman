@@ -63,4 +63,26 @@ public class AdminContractsController : ControllerBase
             UpdatedAt = contract.UpdatedAt,
         });
     }
+
+    /// <summary>
+    /// يمسح رابط ملف العقد الحالي (يرجع الصف لحالة "لا يوجد ملف"). الصف نفسه (واحد ثابت لكل
+    /// طريقة دفع، مزروع مسبقاً) لا يُحذف أبداً — فقط رابط الملف يُصفَّر إلى null.
+    /// </summary>
+    [HttpDelete("{purchaseMethod}")]
+    public async Task<IActionResult> Clear(PurchaseMethod purchaseMethod)
+    {
+        var contract = await _context.PurchaseMethodContracts
+            .FirstOrDefaultAsync(c => c.PurchaseMethod == purchaseMethod);
+
+        if (contract is null)
+        {
+            return NotFound(new { message = "طريقة الدفع غير موجودة" });
+        }
+
+        contract.ContractPdfUrl = null;
+        contract.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
 }

@@ -78,6 +78,10 @@ public class AdminProductsController : ControllerBase
             CashPrice = request.CashPrice,
             MonthlyTotalPrice = request.MonthlyTotalPrice,
             MonthlyPaymentAmount = request.MonthlyPaymentAmount,
+            MonthlyDownPayment = request.MonthlyDownPayment,
+            RafidainTotalPrice = request.RafidainTotalPrice,
+            RafidainPaymentAmount = request.RafidainPaymentAmount,
+            RafidainDownPayment = request.RafidainDownPayment,
             DailyTotalPrice = request.DailyTotalPrice,
             DailyPaymentAmount = request.DailyPaymentAmount,
             SKU = request.SKU,
@@ -125,6 +129,10 @@ public class AdminProductsController : ControllerBase
         product.CashPrice = request.CashPrice;
         product.MonthlyTotalPrice = request.MonthlyTotalPrice;
         product.MonthlyPaymentAmount = request.MonthlyPaymentAmount;
+        product.MonthlyDownPayment = request.MonthlyDownPayment;
+        product.RafidainTotalPrice = request.RafidainTotalPrice;
+        product.RafidainPaymentAmount = request.RafidainPaymentAmount;
+        product.RafidainDownPayment = request.RafidainDownPayment;
         product.DailyTotalPrice = request.DailyTotalPrice;
         product.DailyPaymentAmount = request.DailyPaymentAmount;
         product.SKU = request.SKU;
@@ -138,8 +146,8 @@ public class AdminProductsController : ControllerBase
     }
 
     /// <summary>
-    /// حذف منتج: حذف نهائي إن لم توجد طلبات مرتبطة به، وإلا تعطيل (IsActive = false) بدل الحذف
-    /// (صور المنتج وتقييماته تُحذف تلقائياً مع الحذف النهائي عبر Cascade على مستوى قاعدة البيانات).
+    /// حذف منتج نهائي دائماً (صور المنتج وتقييماته تُحذف معه تلقائياً عبر Cascade). يفشل صراحة
+    /// إن وُجدت طلبات مرتبطة به (راجع catch أدناه) بدل التعطيل الصامت.
     /// </summary>
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
@@ -150,17 +158,25 @@ public class AdminProductsController : ControllerBase
             return NotFound(new { message = "المنتج غير موجود" });
         }
 
-        var hasOrders = await _context.Orders.AnyAsync(o => o.ProductId == id);
-        if (hasOrders)
+        // صور المنتج وآراؤه تُحذف تلقائياً (Cascade) — مقصود وآمن لأنها بيانات فرعية غير مالية.
+        _context.Products.Remove(product);
+
+        try
         {
-            product.IsActive = false;
-            product.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
-            return Ok(new { message = "يوجد طلبات مرتبطة بهذا المنتج، تم تعطيله بدل حذفه نهائياً" });
+        }
+        catch (DbUpdateException)
+        {
+            // قيد Restrict بقاعدة البيانات (Order→Product) رفض الحذف عمداً لحماية السجل
+            // التاريخي/المالي للطلبات — هذا سلوك مقصود، فقط نستبدل خطأ EF/Postgres الخام برسالة عربية مفهومة.
+            var ordersCount = await _context.Orders.CountAsync(o => o.ProductId == id);
+
+            return Conflict(new
+            {
+                message = $"لا يمكن حذف هذا المنتج لوجود {ordersCount} طلب مرتبط به. احذف الطلبات المرتبطة أولاً إن أردت الحذف النهائي.",
+            });
         }
 
-        _context.Products.Remove(product);
-        await _context.SaveChangesAsync();
         return NoContent();
     }
 
@@ -224,6 +240,28 @@ public class AdminProductsController : ControllerBase
             return "يجب تحديد المبلغ الكلي والدفعة الشهرية معاً بالقسط الشهري (أو تركهما فارغين معاً)";
         }
 
+        if (request.MonthlyDownPayment.HasValue && !(hasMonthlyTotal && hasMonthlyPayment))
+        {
+            return "لا يمكن تحديد مقدمة القسط الشهري قبل تحديد المبلغ الكلي والدفعة الشهرية";
+        }
+
+        var hasRafidainTotal = request.RafidainTotalPrice.HasValue;
+        var hasRafidainPayment = request.RafidainPaymentAmount.HasValue;
+        if ((hasRafidainTotal || hasRafidainPayment) && !category.AllowsMonthlyInstallment)
+        {
+            return "لا يمكن تحديد سعر قسط الرافدين لأن هذه الفئة لا تسمح بالتقسيط الشهري";
+        }
+
+        if (hasRafidainTotal != hasRafidainPayment)
+        {
+            return "يجب تحديد المبلغ الكلي والدفعة الشهرية معاً بقسط الرافدين (أو تركهما فارغين معاً)";
+        }
+
+        if (request.RafidainDownPayment.HasValue && !(hasRafidainTotal && hasRafidainPayment))
+        {
+            return "لا يمكن تحديد مقدمة قسط الرافدين قبل تحديد المبلغ الكلي والدفعة الشهرية";
+        }
+
         var hasDailyTotal = request.DailyTotalPrice.HasValue;
         var hasDailyPayment = request.DailyPaymentAmount.HasValue;
         if ((hasDailyTotal || hasDailyPayment) && !category.AllowsDailyInstallment)
@@ -249,6 +287,10 @@ public class AdminProductsController : ControllerBase
         CashPrice = p.CashPrice,
         MonthlyTotalPrice = p.MonthlyTotalPrice,
         MonthlyPaymentAmount = p.MonthlyPaymentAmount,
+        MonthlyDownPayment = p.MonthlyDownPayment,
+        RafidainTotalPrice = p.RafidainTotalPrice,
+        RafidainPaymentAmount = p.RafidainPaymentAmount,
+        RafidainDownPayment = p.RafidainDownPayment,
         DailyTotalPrice = p.DailyTotalPrice,
         DailyPaymentAmount = p.DailyPaymentAmount,
         SKU = p.SKU,

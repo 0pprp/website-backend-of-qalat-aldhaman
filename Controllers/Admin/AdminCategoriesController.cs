@@ -112,16 +112,30 @@ public class AdminCategoriesController : ControllerBase
             return NotFound(new { message = "الفئة غير موجودة" });
         }
 
-        var hasProducts = await _context.Products.AnyAsync(p => p.CategoryId == id);
-        if (hasProducts)
+        _context.Categories.Remove(category);
+
+        try
         {
-            category.IsActive = false;
             await _context.SaveChangesAsync();
-            return Ok(new { message = "تحتوي الفئة على منتجات مرتبطة، تم تعطيلها بدل حذفها نهائياً" });
+        }
+        catch (DbUpdateException)
+        {
+            // قيد Restrict بقاعدة البيانات (Product→Category وOrder→Category) رفض الحذف عمداً
+            // لحماية السجل التاريخي — هذا سلوك مقصود، فقط نستبدل خطأ EF/Postgres الخام برسالة عربية مفهومة.
+            var productsCount = await _context.Products.CountAsync(p => p.CategoryId == id);
+            var ordersCount = await _context.Orders.CountAsync(o => o.CategoryId == id);
+
+            var parts = new List<string>();
+            if (productsCount > 0) parts.Add($"{productsCount} منتج");
+            if (ordersCount > 0) parts.Add($"{ordersCount} طلب");
+            var linkedSummary = parts.Count > 0 ? string.Join(" و", parts) : "سجلات مرتبطة";
+
+            return Conflict(new
+            {
+                message = $"لا يمكن حذف هذه الفئة لوجود {linkedSummary} مرتبط بها. احذف أو انقل المرتبطات أولاً.",
+            });
         }
 
-        _context.Categories.Remove(category);
-        await _context.SaveChangesAsync();
         return NoContent();
     }
 
