@@ -59,6 +59,7 @@ public class ProductsController : ControllerBase
                 MinInvoiceCash = product.Category.MinInvoiceCash,
                 MinInvoiceInstallment = product.Category.MinInvoiceInstallment,
                 HasCustomProductField = product.Category.HasCustomProductField,
+                UsesPackages = product.Category.UsesPackages,
             },
         };
 

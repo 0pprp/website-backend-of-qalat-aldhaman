@@ -29,8 +29,10 @@ public class AdminOrdersController : ControllerBase
     {
         var query = _context.Orders
             .Include(o => o.Product)
+            .Include(o => o.Package)
             .Include(o => o.Category)
             .Include(o => o.Governorate)
+            .Include(o => o.OrderItems)
             .AsQueryable();
 
         if (status.HasValue) query = query.Where(o => o.Status == status.Value);
@@ -40,25 +42,26 @@ public class AdminOrdersController : ControllerBase
 
         var orders = await query
             .OrderByDescending(o => o.CreatedAt)
-            .Select(o => new OrderListItemDto
-            {
-                Id = o.Id,
-                OrderNumber = o.OrderNumber,
-                CustomerName = o.CustomerName,
-                PhoneNumber = o.PhoneNumber,
-                ProductName = o.Product.Name,
-                CategoryName = o.Category.Name,
-                GovernorateId = o.GovernorateId,
-                GovernorateName = o.Governorate.Name,
-                PurchaseMethod = o.PurchaseMethod,
-                Status = o.Status,
-                TotalPriceSnapshot = o.TotalPriceSnapshot,
-                InstallmentPaymentAmountSnapshot = o.InstallmentPaymentAmountSnapshot,
-                CreatedAt = o.CreatedAt,
-            })
             .ToListAsync();
 
-        return Ok(orders);
+        var result = orders.Select(o => new OrderListItemDto
+        {
+            Id = o.Id,
+            OrderNumber = o.OrderNumber,
+            CustomerName = o.CustomerName,
+            PhoneNumber = o.PhoneNumber,
+            ProductName = o.Product?.Name ?? $"باقة: {o.Package?.Name} ({o.OrderItems.Count} منتجات)",
+            CategoryName = o.Category.Name,
+            GovernorateId = o.GovernorateId,
+            GovernorateName = o.Governorate.Name,
+            PurchaseMethod = o.PurchaseMethod,
+            Status = o.Status,
+            TotalPriceSnapshot = o.TotalPriceSnapshot,
+            InstallmentPaymentAmountSnapshot = o.InstallmentPaymentAmountSnapshot,
+            CreatedAt = o.CreatedAt,
+        }).ToList();
+
+        return Ok(result);
     }
 
     [HttpGet("{id:int}")]
@@ -66,8 +69,10 @@ public class AdminOrdersController : ControllerBase
     {
         var order = await _context.Orders
             .Include(o => o.Product)
+            .Include(o => o.Package)
             .Include(o => o.Category)
             .Include(o => o.Governorate)
+            .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
             .FirstOrDefaultAsync(o => o.Id == id);
 
         if (order is null)
@@ -83,8 +88,10 @@ public class AdminOrdersController : ControllerBase
     {
         var order = await _context.Orders
             .Include(o => o.Product)
+            .Include(o => o.Package)
             .Include(o => o.Category)
             .Include(o => o.Governorate)
+            .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
             .FirstOrDefaultAsync(o => o.Id == id);
 
         if (order is null)
@@ -131,7 +138,9 @@ public class AdminOrdersController : ControllerBase
             Id = o.Id,
             OrderNumber = o.OrderNumber,
             ProductId = o.ProductId,
-            ProductName = o.Product.Name,
+            ProductName = o.Product?.Name,
+            PackageId = o.PackageId,
+            PackageName = o.Package?.Name,
             CategoryId = o.CategoryId,
             CategoryName = o.Category.Name,
             PurchaseMethod = o.PurchaseMethod,
@@ -150,10 +159,19 @@ public class AdminOrdersController : ControllerBase
             CustomProductDescription = o.CustomProductDescription,
             TotalPriceSnapshot = o.TotalPriceSnapshot,
             InstallmentPaymentAmountSnapshot = o.InstallmentPaymentAmountSnapshot,
+            DownPaymentSnapshot = o.DownPaymentSnapshot,
             Status = o.Status,
             Notes = o.Notes,
             CreatedAt = o.CreatedAt,
             ContractPdfUrl = contractUrl,
+            Items = o.OrderItems.Select(oi => new OrderItemDto
+            {
+                ProductId = oi.ProductId,
+                ProductName = oi.Product.Name,
+                UnitPriceSnapshot = oi.UnitPriceSnapshot,
+                UnitPeriodicPaymentSnapshot = oi.UnitPeriodicPaymentSnapshot,
+                UnitDownPaymentSnapshot = oi.UnitDownPaymentSnapshot,
+            }).ToList(),
         };
     }
 }

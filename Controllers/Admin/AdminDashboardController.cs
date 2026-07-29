@@ -78,7 +78,7 @@ public class AdminDashboardController : ControllerBase
                 Id = o.Id,
                 OrderNumber = o.OrderNumber,
                 CustomerName = o.CustomerName,
-                ProductName = o.Product.Name,
+                ProductName = o.Product != null ? o.Product.Name : $"باقة: {o.Package!.Name}",
                 PurchaseMethod = o.PurchaseMethod,
                 Status = o.Status,
                 CreatedAt = o.CreatedAt,

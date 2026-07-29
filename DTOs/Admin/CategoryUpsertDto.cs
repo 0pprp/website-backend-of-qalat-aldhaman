@@ -17,4 +17,5 @@ public class CategoryUpsertDto
     public bool HasCustomProductField { get; set; }
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool UsesPackages { get; set; }
 }

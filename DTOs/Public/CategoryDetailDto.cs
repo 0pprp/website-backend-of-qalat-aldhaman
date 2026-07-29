@@ -15,4 +15,5 @@ public class CategoryDetailDto
     public decimal? MinInvoiceCash { get; set; }
     public decimal? MinInvoiceInstallment { get; set; }
     public bool HasCustomProductField { get; set; }
+    public bool UsesPackages { get; set; }
 }

@@ -16,4 +16,5 @@ public class CategoryDto
     public bool HasCustomProductField { get; set; }
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; }
+    public bool UsesPackages { get; set; }
 }

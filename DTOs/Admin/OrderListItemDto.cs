@@ -8,6 +8,7 @@ public class OrderListItemDto
     public string OrderNumber { get; set; } = string.Empty;
     public string CustomerName { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
+    /// <summary>لطلبات الباقات: اسم الباقة مع عدد المنتجات، بدل اسم منتج واحد.</summary>
     public string ProductName { get; set; } = string.Empty;
     public string CategoryName { get; set; } = string.Empty;
     public int GovernorateId { get; set; }

@@ -15,6 +15,8 @@ public class AppDbContext : DbContext
     public DbSet<ProductImage> ProductImages => Set<ProductImage>();
     public DbSet<Governorate> Governorates => Set<Governorate>();
     public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<Package> Packages => Set<Package>();
     public DbSet<Review> Reviews => Set<Review>();
     public DbSet<AdminUser> AdminUsers => Set<AdminUser>();
     public DbSet<PurchaseMethodContract> PurchaseMethodContracts => Set<PurchaseMethodContract>();
@@ -81,6 +83,7 @@ public class AppDbContext : DbContext
 
             entity.Property(o => o.TotalPriceSnapshot).HasColumnType("numeric(12,2)");
             entity.Property(o => o.InstallmentPaymentAmountSnapshot).HasColumnType("numeric(12,2)");
+            entity.Property(o => o.DownPaymentSnapshot).HasColumnType("numeric(12,2)");
             entity.Property(o => o.GpsLat).HasColumnType("numeric(9,6)");
             entity.Property(o => o.GpsLng).HasColumnType("numeric(9,6)");
 
@@ -93,6 +96,11 @@ public class AppDbContext : DbContext
                 .HasForeignKey(o => o.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            entity.HasOne(o => o.Package)
+                .WithMany()
+                .HasForeignKey(o => o.PackageId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             entity.HasOne(o => o.Category)
                 .WithMany()
                 .HasForeignKey(o => o.CategoryId)
@@ -101,6 +109,33 @@ public class AppDbContext : DbContext
             entity.HasOne(o => o.Governorate)
                 .WithMany()
                 .HasForeignKey(o => o.GovernorateId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<OrderItem>(entity =>
+        {
+            entity.Property(oi => oi.UnitPriceSnapshot).HasColumnType("numeric(12,2)");
+            entity.Property(oi => oi.UnitPeriodicPaymentSnapshot).HasColumnType("numeric(12,2)");
+            entity.Property(oi => oi.UnitDownPaymentSnapshot).HasColumnType("numeric(12,2)");
+
+            entity.HasOne(oi => oi.Order)
+                .WithMany(o => o.OrderItems)
+                .HasForeignKey(oi => oi.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(oi => oi.Product)
+                .WithMany()
+                .HasForeignKey(oi => oi.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Package>(entity =>
+        {
+            entity.Property(p => p.MinimumTotalPrice).HasColumnType("numeric(12,2)");
+
+            entity.HasOne(p => p.Category)
+                .WithMany(c => c.Packages)
+                .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

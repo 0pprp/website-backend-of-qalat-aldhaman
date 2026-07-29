@@ -55,6 +55,7 @@ public class AdminCategoriesController : ControllerBase
             HasCustomProductField = request.HasCustomProductField,
             DisplayOrder = request.DisplayOrder,
             IsActive = request.IsActive,
+            UsesPackages = request.UsesPackages,
         };
 
         _context.Categories.Add(category);
@@ -94,6 +95,7 @@ public class AdminCategoriesController : ControllerBase
         category.HasCustomProductField = request.HasCustomProductField;
         category.DisplayOrder = request.DisplayOrder;
         category.IsActive = request.IsActive;
+        category.UsesPackages = request.UsesPackages;
 
         await _context.SaveChangesAsync();
 
@@ -170,5 +172,6 @@ public class AdminCategoriesController : ControllerBase
         HasCustomProductField = c.HasCustomProductField,
         DisplayOrder = c.DisplayOrder,
         IsActive = c.IsActive,
+        UsesPackages = c.UsesPackages,
     };
 }

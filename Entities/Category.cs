@@ -17,5 +17,9 @@ public class Category
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; }
 
+    /// <summary>إن كانت true، هذه الفئة تُشترى فقط عبر باقة (اختيار عدة منتجات معاً) — لا شراء منتج واحد مباشر.</summary>
+    public bool UsesPackages { get; set; }
+
     public List<Product> Products { get; set; } = [];
+    public List<Package> Packages { get; set; } = [];
 }
