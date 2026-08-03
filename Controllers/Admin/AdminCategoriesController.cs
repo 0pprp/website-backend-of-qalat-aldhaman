@@ -48,6 +48,7 @@ public class AdminCategoriesController : ControllerBase
             ImageUrl = request.ImageUrl,
             AllowsCash = request.AllowsCash,
             AllowsMonthlyInstallment = request.AllowsMonthlyInstallment,
+            AllowsMonthlyRafidain = request.AllowsMonthlyRafidain,
             AllowsDailyInstallment = request.AllowsDailyInstallment,
             RequiresShopOwner = request.RequiresShopOwner,
             MinInvoiceCash = request.MinInvoiceCash,
@@ -88,6 +89,7 @@ public class AdminCategoriesController : ControllerBase
         category.ImageUrl = request.ImageUrl;
         category.AllowsCash = request.AllowsCash;
         category.AllowsMonthlyInstallment = request.AllowsMonthlyInstallment;
+        category.AllowsMonthlyRafidain = request.AllowsMonthlyRafidain;
         category.AllowsDailyInstallment = request.AllowsDailyInstallment;
         category.RequiresShopOwner = request.RequiresShopOwner;
         category.MinInvoiceCash = request.MinInvoiceCash;
@@ -165,6 +167,7 @@ public class AdminCategoriesController : ControllerBase
         ImageUrl = c.ImageUrl,
         AllowsCash = c.AllowsCash,
         AllowsMonthlyInstallment = c.AllowsMonthlyInstallment,
+        AllowsMonthlyRafidain = c.AllowsMonthlyRafidain,
         AllowsDailyInstallment = c.AllowsDailyInstallment,
         RequiresShopOwner = c.RequiresShopOwner,
         MinInvoiceCash = c.MinInvoiceCash,

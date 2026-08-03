@@ -54,6 +54,7 @@ public class ProductsController : ControllerBase
                 Slug = product.Category.Slug,
                 AllowsCash = product.Category.AllowsCash,
                 AllowsMonthlyInstallment = product.Category.AllowsMonthlyInstallment,
+                AllowsMonthlyRafidain = product.Category.AllowsMonthlyRafidain,
                 AllowsDailyInstallment = product.Category.AllowsDailyInstallment,
                 RequiresShopOwner = product.Category.RequiresShopOwner,
                 MinInvoiceCash = product.Category.MinInvoiceCash,

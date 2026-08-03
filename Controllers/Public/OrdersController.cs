@@ -82,7 +82,8 @@ public class OrdersController : ControllerBase
         var methodAllowed = request.PurchaseMethod switch
         {
             PurchaseMethod.Cash => category.AllowsCash,
-            PurchaseMethod.MonthlyInstallment or PurchaseMethod.MonthlyRafidain => category.AllowsMonthlyInstallment,
+            PurchaseMethod.MonthlyInstallment => category.AllowsMonthlyInstallment,
+            PurchaseMethod.MonthlyRafidain => category.AllowsMonthlyRafidain,
             PurchaseMethod.DailyInstallment => category.AllowsDailyInstallment,
             _ => false,
         };
@@ -217,7 +218,8 @@ public class OrdersController : ControllerBase
         var methodAllowed = request.PurchaseMethod switch
         {
             PurchaseMethod.Cash => category.AllowsCash,
-            PurchaseMethod.MonthlyInstallment or PurchaseMethod.MonthlyRafidain => category.AllowsMonthlyInstallment,
+            PurchaseMethod.MonthlyInstallment => category.AllowsMonthlyInstallment,
+            PurchaseMethod.MonthlyRafidain => category.AllowsMonthlyRafidain,
             PurchaseMethod.DailyInstallment => category.AllowsDailyInstallment,
             _ => false,
         };

@@ -35,6 +35,7 @@ public class CategoriesController : ControllerBase
                 UsesPackages = c.UsesPackages,
                 AllowsCash = c.AllowsCash,
                 AllowsMonthlyInstallment = c.AllowsMonthlyInstallment,
+                AllowsMonthlyRafidain = c.AllowsMonthlyRafidain,
                 AllowsDailyInstallment = c.AllowsDailyInstallment,
                 RequiresShopOwner = c.RequiresShopOwner,
                 MinInvoiceCash = c.MinInvoiceCash,

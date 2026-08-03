@@ -8,7 +8,13 @@ public class Category
     public string? Description { get; set; }
     public string? ImageUrl { get; set; }
     public bool AllowsCash { get; set; }
+
+    /// <summary>يتحكم بالقسط الشهري العادي فقط — منفصل كلياً عن AllowsMonthlyRafidain.</summary>
     public bool AllowsMonthlyInstallment { get; set; }
+
+    /// <summary>يتحكم بقسط الرافدين للموظفين فقط — مستقل تماماً عن AllowsMonthlyInstallment.</summary>
+    public bool AllowsMonthlyRafidain { get; set; }
+
     public bool AllowsDailyInstallment { get; set; }
     public bool RequiresShopOwner { get; set; }
     public decimal? MinInvoiceCash { get; set; }

@@ -247,9 +247,9 @@ public class AdminProductsController : ControllerBase
 
         var hasRafidainTotal = request.RafidainTotalPrice.HasValue;
         var hasRafidainPayment = request.RafidainPaymentAmount.HasValue;
-        if ((hasRafidainTotal || hasRafidainPayment) && !category.AllowsMonthlyInstallment)
+        if ((hasRafidainTotal || hasRafidainPayment) && !category.AllowsMonthlyRafidain)
         {
-            return "لا يمكن تحديد سعر قسط الرافدين لأن هذه الفئة لا تسمح بالتقسيط الشهري";
+            return "لا يمكن تحديد سعر قسط الرافدين لأن هذه الفئة لا تسمح بقسط الرافدين";
         }
 
         if (hasRafidainTotal != hasRafidainPayment)

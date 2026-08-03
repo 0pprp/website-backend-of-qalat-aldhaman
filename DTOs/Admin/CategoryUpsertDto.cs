@@ -10,6 +10,7 @@ public class CategoryUpsertDto
     public string? ImageUrl { get; set; }
     public bool AllowsCash { get; set; }
     public bool AllowsMonthlyInstallment { get; set; }
+    public bool AllowsMonthlyRafidain { get; set; }
     public bool AllowsDailyInstallment { get; set; }
     public bool RequiresShopOwner { get; set; }
     public decimal? MinInvoiceCash { get; set; }
