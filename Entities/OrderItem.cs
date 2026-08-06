@@ -10,8 +10,11 @@ public class OrderItem
     public int ProductId { get; set; }
     public Product Product { get; set; } = null!;
 
-    /// <summary>سعر هذا المنتج وقت الطلب، حسب طريقة الدفع المختارة لكامل طلب الباقة.</summary>
+    /// <summary>سعر هذا المنتج وقت الطلب (للوحدة الواحدة)، حسب طريقة الدفع المختارة لكامل طلب الباقة.</summary>
     public decimal UnitPriceSnapshot { get; set; }
     public decimal? UnitPeriodicPaymentSnapshot { get; set; }
     public decimal? UnitDownPaymentSnapshot { get; set; }
+
+    /// <summary>الكمية المختارة من هذا المنتج — الإجمالي الفرعي = UnitPriceSnapshot × Quantity.</summary>
+    public int Quantity { get; set; } = 1;
 }

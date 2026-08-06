@@ -50,4 +50,5 @@ public class OrderItemDto
     public decimal UnitPriceSnapshot { get; set; }
     public decimal? UnitPeriodicPaymentSnapshot { get; set; }
     public decimal? UnitDownPaymentSnapshot { get; set; }
+    public int Quantity { get; set; }
 }

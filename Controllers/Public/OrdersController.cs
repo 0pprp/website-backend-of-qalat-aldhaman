@@ -236,13 +236,19 @@ public class OrdersController : ControllerBase
             return BadRequest(new { message = "هذه الباقة لا تتوفر بطريقة الدفع المختارة حالياً" });
         }
 
-        // 3. المنتجات المختارة: موجودة، تتبع نفس فئة الباقة، فعّالة، ولها سعر صالح لطريقة الدفع المختارة
-        if (request.ProductIds is null || request.ProductIds.Count == 0)
+        // 3. المنتجات المختارة (مع كمياتها): موجودة، متاحة ضمن الباقات، تتبع نفس فئة الباقة، فعّالة،
+        // ولها سعر صالح لطريقة الدفع المختارة
+        if (request.PackageOrderItems is null || request.PackageOrderItems.Count == 0)
         {
             return BadRequest(new { message = "يجب اختيار منتج واحد على الأقل ضمن الباقة" });
         }
 
-        var distinctProductIds = request.ProductIds.Distinct().ToList();
+        if (request.PackageOrderItems.Any(i => i.Quantity < 1))
+        {
+            return BadRequest(new { message = "الكمية يجب أن تكون رقماً صحيحاً أكبر من صفر لكل منتج مختار" });
+        }
+
+        var distinctProductIds = request.PackageOrderItems.Select(i => i.ProductId).Distinct().ToList();
         var products = await _context.Products
             .Where(p => distinctProductIds.Contains(p.Id))
             .ToListAsync();
@@ -253,9 +259,11 @@ public class OrdersController : ControllerBase
             return BadRequest(new { message = $"منتج غير موجود (معرّف: {string.Join(", ", missingIds)})" });
         }
 
-        var pricedProducts = new List<(Product Product, decimal Total, decimal? Payment, decimal? DownPayment)>();
-        foreach (var product in products)
+        var pricedProducts = new List<(Product Product, int Quantity, decimal Total, decimal? Payment, decimal? DownPayment)>();
+        foreach (var item in request.PackageOrderItems)
         {
+            var product = products.First(p => p.Id == item.ProductId);
+
             if (product.CategoryId != category.Id)
             {
                 return BadRequest(new { message = $"المنتج \"{product.Name}\" لا ينتمي لفئة هذه الباقة" });
@@ -266,18 +274,23 @@ public class OrdersController : ControllerBase
                 return BadRequest(new { message = $"المنتج \"{product.Name}\" غير متوفر حالياً" });
             }
 
+            if (!product.IsAvailableInPackages)
+            {
+                return BadRequest(new { message = $"المنتج \"{product.Name}\" غير متاح ضمن الباقات" });
+            }
+
             var (total, payment, downPayment) = ResolveProductPricing(product, request.PurchaseMethod);
             if (total is null)
             {
                 return BadRequest(new { message = $"المنتج \"{product.Name}\" لا يتوفر بطريقة الدفع المختارة" });
             }
 
-            pricedProducts.Add((product, total.Value, payment, downPayment));
+            pricedProducts.Add((product, item.Quantity, total.Value, payment, downPayment));
         }
 
-        // 4. مجموع أسعار المنتجات المختارة يُستخدم فقط للتحقق من أن الزبون اختار ما يكفي (الحد الأدنى للباقة) —
-        // لا يُستخدم كسعر الطلب النهائي، فسعر الطلب يأتي من الباقة نفسها (packageTotal أعلاه).
-        var totalSum = pricedProducts.Sum(p => p.Total);
+        // 4. مجموع أسعار المنتجات المختارة (سعر الوحدة × الكمية) يُستخدم فقط للتحقق من أن الزبون اختار ما يكفي
+        // (الحد الأدنى للباقة) — لا يُستخدم كسعر الطلب النهائي، فسعر الطلب يأتي من الباقة نفسها (packageTotal أعلاه).
+        var totalSum = pricedProducts.Sum(p => p.Total * p.Quantity);
         if (totalSum < package.MinimumTotalPrice)
         {
             return BadRequest(new
@@ -352,6 +365,7 @@ public class OrdersController : ControllerBase
                 UnitPriceSnapshot = p.Total,
                 UnitPeriodicPaymentSnapshot = p.Payment,
                 UnitDownPaymentSnapshot = p.DownPayment,
+                Quantity = p.Quantity,
             }).ToList(),
         };
 

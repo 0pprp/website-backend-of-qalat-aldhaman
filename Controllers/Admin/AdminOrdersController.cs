@@ -172,6 +172,7 @@ public class AdminOrdersController : ControllerBase
                 UnitPriceSnapshot = oi.UnitPriceSnapshot,
                 UnitPeriodicPaymentSnapshot = oi.UnitPeriodicPaymentSnapshot,
                 UnitDownPaymentSnapshot = oi.UnitDownPaymentSnapshot,
+                Quantity = oi.Quantity,
             }).ToList(),
         };
     }

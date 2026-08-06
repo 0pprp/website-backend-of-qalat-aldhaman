@@ -86,6 +86,7 @@ public class AdminProductsController : ControllerBase
             DailyPaymentAmount = request.DailyPaymentAmount,
             SKU = request.SKU,
             IsActive = request.IsActive,
+            IsAvailableInPackages = request.IsAvailableInPackages,
             CreatedAt = now,
             UpdatedAt = now,
         };
@@ -137,6 +138,7 @@ public class AdminProductsController : ControllerBase
         product.DailyPaymentAmount = request.DailyPaymentAmount;
         product.SKU = request.SKU;
         product.IsActive = request.IsActive;
+        product.IsAvailableInPackages = request.IsAvailableInPackages;
         product.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
@@ -295,6 +297,7 @@ public class AdminProductsController : ControllerBase
         DailyPaymentAmount = p.DailyPaymentAmount,
         SKU = p.SKU,
         IsActive = p.IsActive,
+        IsAvailableInPackages = p.IsAvailableInPackages,
         CreatedAt = p.CreatedAt,
         UpdatedAt = p.UpdatedAt,
         Images = p.Images?

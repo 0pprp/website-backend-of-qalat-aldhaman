@@ -39,6 +39,10 @@ public class Product
 
     public string? SKU { get; set; }
     public bool IsActive { get; set; }
+
+    /// <summary>يحدده الأدمن — فقط المنتجات المعلَّمة تظهر بشاشة اختيار منتجات الباقة بالموقع (GET .../products?packageOnly=true).</summary>
+    public bool IsAvailableInPackages { get; set; }
+
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

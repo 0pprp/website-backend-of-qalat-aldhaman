@@ -18,4 +18,5 @@ public class ProductUpsertDto
     public decimal? DailyPaymentAmount { get; set; }
     public string? SKU { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsAvailableInPackages { get; set; }
 }

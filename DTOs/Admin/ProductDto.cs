@@ -18,6 +18,7 @@ public class ProductDto
     public decimal? DailyPaymentAmount { get; set; }
     public string? SKU { get; set; }
     public bool IsActive { get; set; }
+    public bool IsAvailableInPackages { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public List<ProductImageDto> Images { get; set; } = [];

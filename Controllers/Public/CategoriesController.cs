@@ -48,7 +48,8 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet("{slug}/products")]
-    public async Task<ActionResult<List<ProductListItemDto>>> GetProducts(string slug, [FromQuery] PurchaseMethod? purchaseMethod)
+    public async Task<ActionResult<List<ProductListItemDto>>> GetProducts(
+        string slug, [FromQuery] PurchaseMethod? purchaseMethod, [FromQuery] bool packageOnly = false)
     {
         var category = await _context.Categories.FirstOrDefaultAsync(c => c.Slug == slug && c.IsActive);
         if (category is null)
@@ -56,8 +57,13 @@ public class CategoriesController : ControllerBase
             return NotFound(new { message = "الفئة غير موجودة" });
         }
 
-        var products = await _context.Products
-            .Where(p => p.CategoryId == category.Id && p.IsActive)
+        var query = _context.Products.Where(p => p.CategoryId == category.Id && p.IsActive);
+        if (packageOnly)
+        {
+            query = query.Where(p => p.IsAvailableInPackages);
+        }
+
+        var products = await query
             .Include(p => p.Images)
             .OrderBy(p => p.Name)
             .ToListAsync();

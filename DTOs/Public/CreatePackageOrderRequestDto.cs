@@ -2,11 +2,17 @@ using QalatAldhaman.Store.Api.Entities.Enums;
 
 namespace QalatAldhaman.Store.Api.DTOs.Public;
 
+public class PackageOrderItemDto
+{
+    public int ProductId { get; set; }
+    public int Quantity { get; set; } = 1;
+}
+
 public class CreatePackageOrderRequestDto
 {
     public int PackageId { get; set; }
     public PurchaseMethod PurchaseMethod { get; set; }
-    public List<int> ProductIds { get; set; } = [];
+    public List<PackageOrderItemDto> PackageOrderItems { get; set; } = [];
     public string CustomerName { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
     public int GovernorateId { get; set; }

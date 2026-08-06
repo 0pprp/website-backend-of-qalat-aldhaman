@@ -117,6 +117,7 @@ public class AppDbContext : DbContext
             entity.Property(oi => oi.UnitPriceSnapshot).HasColumnType("numeric(12,2)");
             entity.Property(oi => oi.UnitPeriodicPaymentSnapshot).HasColumnType("numeric(12,2)");
             entity.Property(oi => oi.UnitDownPaymentSnapshot).HasColumnType("numeric(12,2)");
+            entity.Property(oi => oi.Quantity).HasDefaultValue(1);
 
             entity.HasOne(oi => oi.Order)
                 .WithMany(o => o.OrderItems)
