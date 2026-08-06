@@ -62,7 +62,9 @@ builder.Services.AddCors(options =>
                 // Admin panel (React/Vite) dev server.
                 "http://localhost:5174",
                 // Admin panel production domain.
-                "https://admin.qalataldhaman.com")
+                "https://admin.qalataldhaman.com",
+                // Admin panel on qalatlaw subdomain
+                "https://admin.qalatlaw.com")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
