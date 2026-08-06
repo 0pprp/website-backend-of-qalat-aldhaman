@@ -58,6 +58,7 @@ public class AdminOrdersController : ControllerBase
             Status = o.Status,
             TotalPriceSnapshot = o.TotalPriceSnapshot,
             InstallmentPaymentAmountSnapshot = o.InstallmentPaymentAmountSnapshot,
+            DownPaymentSnapshot = o.DownPaymentSnapshot,
             CreatedAt = o.CreatedAt,
         }).ToList();
 

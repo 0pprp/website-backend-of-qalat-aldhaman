@@ -229,6 +229,13 @@ public class OrdersController : ControllerBase
             return BadRequest(new { message = "طريقة الدفع هذه غير متاحة لهذه الفئة" });
         }
 
+        // 2.5. سعر الباقة نفسها بطريقة الدفع المختارة — هذا هو السعر النهائي للطلب، لا مجموع أسعار المنتجات
+        var (packageTotal, packagePayment, packageDownPayment) = ResolvePackagePricing(package, request.PurchaseMethod);
+        if (packageTotal is null)
+        {
+            return BadRequest(new { message = "هذه الباقة لا تتوفر بطريقة الدفع المختارة حالياً" });
+        }
+
         // 3. المنتجات المختارة: موجودة، تتبع نفس فئة الباقة، فعّالة، ولها سعر صالح لطريقة الدفع المختارة
         if (request.ProductIds is null || request.ProductIds.Count == 0)
         {
@@ -268,7 +275,8 @@ public class OrdersController : ControllerBase
             pricedProducts.Add((product, total.Value, payment, downPayment));
         }
 
-        // 4. المجموع يجب أن يبلغ حد الباقة الأدنى على الأقل
+        // 4. مجموع أسعار المنتجات المختارة يُستخدم فقط للتحقق من أن الزبون اختار ما يكفي (الحد الأدنى للباقة) —
+        // لا يُستخدم كسعر الطلب النهائي، فسعر الطلب يأتي من الباقة نفسها (packageTotal أعلاه).
         var totalSum = pricedProducts.Sum(p => p.Total);
         if (totalSum < package.MinimumTotalPrice)
         {
@@ -310,16 +318,9 @@ public class OrdersController : ControllerBase
             return BadRequest(new { message = "المحافظة المختارة غير موجودة" });
         }
 
-        // 6. إنشاء الطلب + عناصره
+        // 6. إنشاء الطلب + عناصره — سعر الطلب (الكلي/الدفعة الدورية/المقدمة) يأتي من الباقة نفسها
+        // (packageTotal/packagePayment/packageDownPayment)، لا من مجموع أسعار المنتجات المختارة.
         var orderNumber = await _orderNumberGenerator.GenerateAsync();
-
-        var installmentSum = request.PurchaseMethod == PurchaseMethod.Cash
-            ? (decimal?)null
-            : pricedProducts.Sum(p => p.Payment ?? 0);
-
-        var downPaymentSum = pricedProducts.All(p => p.DownPayment is null)
-            ? (decimal?)null
-            : pricedProducts.Sum(p => p.DownPayment ?? 0);
 
         var order = new Order
         {
@@ -340,9 +341,9 @@ public class OrdersController : ControllerBase
             GpsLat = request.GpsLat,
             GpsLng = request.GpsLng,
             CustomProductDescription = request.CustomProductDescription,
-            TotalPriceSnapshot = totalSum,
-            InstallmentPaymentAmountSnapshot = installmentSum,
-            DownPaymentSnapshot = downPaymentSum,
+            TotalPriceSnapshot = packageTotal.Value,
+            InstallmentPaymentAmountSnapshot = packagePayment,
+            DownPaymentSnapshot = packageDownPayment,
             Status = OrderStatus.Pending,
             CreatedAt = DateTime.UtcNow,
             OrderItems = pricedProducts.Select(p => new OrderItem
@@ -382,6 +383,22 @@ public class OrdersController : ControllerBase
             : (null, null, null),
         PurchaseMethod.DailyInstallment => product.IsDailyInstallmentAvailable
             ? (product.DailyTotalPrice, product.DailyPaymentAmount, null)
+            : (null, null, null),
+        _ => (null, null, null),
+    };
+
+    /// <summary>يستخرج (المبلغ الكلي، الدفعة الدورية، المقدمة) لباقة معيّنة حسب طريقة دفع مختارة — نفس منطق ResolveProductPricing بالضبط، لكن على سعر الباقة نفسها.</summary>
+    private static (decimal? Total, decimal? Payment, decimal? DownPayment) ResolvePackagePricing(Package package, PurchaseMethod method) => method switch
+    {
+        PurchaseMethod.Cash => (package.CashPrice, null, null),
+        PurchaseMethod.MonthlyInstallment => package.IsMonthlyInstallmentAvailable
+            ? (package.MonthlyTotalPrice, package.MonthlyPaymentAmount, package.MonthlyDownPayment)
+            : (null, null, null),
+        PurchaseMethod.MonthlyRafidain => package.IsRafidainInstallmentAvailable
+            ? (package.RafidainTotalPrice, package.RafidainPaymentAmount, package.RafidainDownPayment)
+            : (null, null, null),
+        PurchaseMethod.DailyInstallment => package.IsDailyInstallmentAvailable
+            ? (package.DailyTotalPrice, package.DailyPaymentAmount, null)
             : (null, null, null),
         _ => (null, null, null),
     };

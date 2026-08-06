@@ -17,5 +17,6 @@ public class OrderListItemDto
     public OrderStatus Status { get; set; }
     public decimal TotalPriceSnapshot { get; set; }
     public decimal? InstallmentPaymentAmountSnapshot { get; set; }
+    public decimal? DownPaymentSnapshot { get; set; }
     public DateTime CreatedAt { get; set; }
 }

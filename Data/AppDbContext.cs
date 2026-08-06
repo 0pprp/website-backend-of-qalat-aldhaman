@@ -132,6 +132,15 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Package>(entity =>
         {
             entity.Property(p => p.MinimumTotalPrice).HasColumnType("numeric(12,2)");
+            entity.Property(p => p.CashPrice).HasColumnType("numeric(12,2)");
+            entity.Property(p => p.MonthlyTotalPrice).HasColumnType("numeric(12,2)");
+            entity.Property(p => p.MonthlyPaymentAmount).HasColumnType("numeric(12,2)");
+            entity.Property(p => p.MonthlyDownPayment).HasColumnType("numeric(12,2)");
+            entity.Property(p => p.DailyTotalPrice).HasColumnType("numeric(12,2)");
+            entity.Property(p => p.DailyPaymentAmount).HasColumnType("numeric(12,2)");
+            entity.Property(p => p.RafidainTotalPrice).HasColumnType("numeric(12,2)");
+            entity.Property(p => p.RafidainPaymentAmount).HasColumnType("numeric(12,2)");
+            entity.Property(p => p.RafidainDownPayment).HasColumnType("numeric(12,2)");
 
             entity.HasOne(p => p.Category)
                 .WithMany(c => c.Packages)

@@ -56,8 +56,13 @@ builder.Services.AddCors(options =>
     options.AddPolicy(FrontendDevCorsPolicy, policy =>
     {
         policy
-            // Frontend dev server (qalat-aldhaman-gateway). Add the production domain here once deployed.
-            .WithOrigins("http://localhost:8080")
+            .WithOrigins(
+                // Customer storefront dev server (qalat-aldhaman-gateway).
+                "http://localhost:8080",
+                // Admin panel (React/Vite) dev server.
+                "http://localhost:5174",
+                // Admin panel production domain.
+                "https://admin.qalataldhaman.com")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });

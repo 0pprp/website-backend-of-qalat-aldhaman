@@ -106,15 +106,27 @@ public class CategoriesController : ControllerBase
         var packages = await _context.Packages
             .Where(p => p.CategoryId == category.Id && p.IsActive)
             .OrderBy(p => p.DisplayOrder)
-            .Select(p => new PackagePublicDto
-            {
-                Id = p.Id,
-                Name = p.Name,
-                MinimumTotalPrice = p.MinimumTotalPrice,
-                DisplayOrder = p.DisplayOrder,
-            })
             .ToListAsync();
 
-        return Ok(packages);
+        // يُحسب هنا (بعد الجلب) لا داخل Select لأن IsMonthlyInstallmentAvailable/IsDailyInstallmentAvailable
+        // خصائص محسوبة بالكود ([NotMapped]) لا يمكن ترجمتها إلى SQL مباشرة — نفس منطق GetProducts بالضبط.
+        var result = packages.Select(p => new PackagePublicDto
+        {
+            Id = p.Id,
+            Name = p.Name,
+            MinimumTotalPrice = p.MinimumTotalPrice,
+            DisplayOrder = p.DisplayOrder,
+            CashPrice = p.CashPrice,
+            MonthlyTotalPrice = p.IsMonthlyInstallmentAvailable ? p.MonthlyTotalPrice : null,
+            MonthlyPaymentAmount = p.IsMonthlyInstallmentAvailable ? p.MonthlyPaymentAmount : null,
+            MonthlyDownPayment = p.IsMonthlyInstallmentAvailable ? p.MonthlyDownPayment : null,
+            RafidainTotalPrice = p.IsRafidainInstallmentAvailable ? p.RafidainTotalPrice : null,
+            RafidainPaymentAmount = p.IsRafidainInstallmentAvailable ? p.RafidainPaymentAmount : null,
+            RafidainDownPayment = p.IsRafidainInstallmentAvailable ? p.RafidainDownPayment : null,
+            DailyTotalPrice = p.IsDailyInstallmentAvailable ? p.DailyTotalPrice : null,
+            DailyPaymentAmount = p.IsDailyInstallmentAvailable ? p.DailyPaymentAmount : null,
+        }).ToList();
+
+        return Ok(result);
     }
 }

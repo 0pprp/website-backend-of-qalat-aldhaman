@@ -49,6 +49,12 @@ public class AdminPackagesController : ControllerBase
             return BadRequest(new { message = "الحد الأدنى للباقة يجب أن يكون أكبر من صفر" });
         }
 
+        var priceError = ValidatePricePairs(request);
+        if (priceError is not null)
+        {
+            return BadRequest(new { message = priceError });
+        }
+
         var category = await _context.Categories.FindAsync(request.CategoryId);
         if (category is null)
         {
@@ -62,6 +68,15 @@ public class AdminPackagesController : ControllerBase
             MinimumTotalPrice = request.MinimumTotalPrice,
             DisplayOrder = request.DisplayOrder,
             IsActive = request.IsActive,
+            CashPrice = request.CashPrice,
+            MonthlyTotalPrice = request.MonthlyTotalPrice,
+            MonthlyPaymentAmount = request.MonthlyPaymentAmount,
+            MonthlyDownPayment = request.MonthlyDownPayment,
+            RafidainTotalPrice = request.RafidainTotalPrice,
+            RafidainPaymentAmount = request.RafidainPaymentAmount,
+            RafidainDownPayment = request.RafidainDownPayment,
+            DailyTotalPrice = request.DailyTotalPrice,
+            DailyPaymentAmount = request.DailyPaymentAmount,
         };
 
         _context.Packages.Add(package);
@@ -90,6 +105,12 @@ public class AdminPackagesController : ControllerBase
             return BadRequest(new { message = "الحد الأدنى للباقة يجب أن يكون أكبر من صفر" });
         }
 
+        var priceError = ValidatePricePairs(request);
+        if (priceError is not null)
+        {
+            return BadRequest(new { message = priceError });
+        }
+
         var category = await _context.Categories.FindAsync(request.CategoryId);
         if (category is null)
         {
@@ -101,6 +122,15 @@ public class AdminPackagesController : ControllerBase
         package.MinimumTotalPrice = request.MinimumTotalPrice;
         package.DisplayOrder = request.DisplayOrder;
         package.IsActive = request.IsActive;
+        package.CashPrice = request.CashPrice;
+        package.MonthlyTotalPrice = request.MonthlyTotalPrice;
+        package.MonthlyPaymentAmount = request.MonthlyPaymentAmount;
+        package.MonthlyDownPayment = request.MonthlyDownPayment;
+        package.RafidainTotalPrice = request.RafidainTotalPrice;
+        package.RafidainPaymentAmount = request.RafidainPaymentAmount;
+        package.RafidainDownPayment = request.RafidainDownPayment;
+        package.DailyTotalPrice = request.DailyTotalPrice;
+        package.DailyPaymentAmount = request.DailyPaymentAmount;
 
         await _context.SaveChangesAsync();
 
@@ -136,6 +166,27 @@ public class AdminPackagesController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>كل زوج (المبلغ الكلي + الدفعة الدورية) يجب أن يُعبَّأ كاملاً أو يُترك فارغاً كاملاً — نفس قاعدة Product بالضبط.</summary>
+    private static string? ValidatePricePairs(PackageUpsertDto request)
+    {
+        if (request.MonthlyTotalPrice.HasValue != request.MonthlyPaymentAmount.HasValue)
+        {
+            return "يجب تحديد المبلغ الكلي والدفعة الشهرية معاً بالقسط الشهري (أو تركهما فارغين معاً)";
+        }
+
+        if (request.RafidainTotalPrice.HasValue != request.RafidainPaymentAmount.HasValue)
+        {
+            return "يجب تحديد المبلغ الكلي والدفعة الشهرية معاً بقسط الرافدين (أو تركهما فارغين معاً)";
+        }
+
+        if (request.DailyTotalPrice.HasValue != request.DailyPaymentAmount.HasValue)
+        {
+            return "يجب تحديد المبلغ الكلي والدفعة اليومية معاً بالقسط اليومي (أو تركهما فارغين معاً)";
+        }
+
+        return null;
+    }
+
     private static PackageDto ToDto(Package p) => new()
     {
         Id = p.Id,
@@ -145,5 +196,14 @@ public class AdminPackagesController : ControllerBase
         MinimumTotalPrice = p.MinimumTotalPrice,
         DisplayOrder = p.DisplayOrder,
         IsActive = p.IsActive,
+        CashPrice = p.CashPrice,
+        MonthlyTotalPrice = p.MonthlyTotalPrice,
+        MonthlyPaymentAmount = p.MonthlyPaymentAmount,
+        MonthlyDownPayment = p.MonthlyDownPayment,
+        RafidainTotalPrice = p.RafidainTotalPrice,
+        RafidainPaymentAmount = p.RafidainPaymentAmount,
+        RafidainDownPayment = p.RafidainDownPayment,
+        DailyTotalPrice = p.DailyTotalPrice,
+        DailyPaymentAmount = p.DailyPaymentAmount,
     };
 }
